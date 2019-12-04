@@ -33,7 +33,7 @@ class SearchService {
         .then(
           res => {
             //console.log(res);
-            this.results = res.results.map(item=>{
+            this.results = res.results.map(item => {                                            //tutaj mi wywala błąd
               return new SearchItem(
                 item.trackName,
                 item.artistName,
@@ -86,6 +86,7 @@ class SearchService {
 })
 
 class AppComponent {
+
   private loading: boolean = false;
   constructor(private itunes: SearchService) {
 
