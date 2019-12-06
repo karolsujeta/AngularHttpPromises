@@ -33,13 +33,13 @@ class SearchService {
         .then(
           res => {
             //console.log(res);
-            this.results = res.results.map(item => {                                            //tutaj mi wywala błąd
+            this.results = (res as any).results.map(item => {                                            //tutaj mi wywala błąd
               return new SearchItem(
                 item.trackName,
                 item.artistName,
                 item.trackViewUtl,
                 item.artworkUrl30,
-                item.artistId
+                item.artistId 
               );
             })
           },
