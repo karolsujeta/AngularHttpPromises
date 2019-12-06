@@ -2,8 +2,6 @@ import { NgModule, Component, Injectable } from "@angular/core";
 import { BrowserModule } from "@angular/platform-browser";
 import { platformBrowserDynamic } from "@angular/platform-browser-dynamic";
 import { HttpClientModule, HttpClient } from "@angular/common/http";
-import { Observable } from 'rxjs';
-import 'rxjs/add/operator/map';
 
 class SearchItem {
   constructor(
@@ -27,22 +25,32 @@ class SearchService {
     this.loading = false;
   }
 
-  search(term: string): Observable<SearchItem[]> {
-    let apiURL = `${this.apiRoot}?term=${term}&media=music&limit=20`;
-    return this.http.get(apiURL)
-      .map(res => {
-        let results = (res as any).results.map(item => {
-          return new SearchItem(
-            item.trackName,
-            item.artistName,
-            item.trackViewUrl,
-            item.artworkUrl30,
-            item.artistId
-          );
-        })
-        return results;
-      });
+  search(term: string) {
+    let promise = new Promise((resolve, reject) => {
+      let apiURL = `${this.apiRoot}?term=${term}&media=music&limit=20`;
+      this.http.get(apiURL)
+        .toPromise()
+        .then(
+          res => {
+            //console.log(res);
+            this.results = (res as any).results.map(item => {                                            //tutaj mi wywala błąd
+              return new SearchItem(
+                item.trackName,
+                item.artistName,
+                item.trackViewUtl,
+                item.artworkUrl30,
+                item.artistId 
+              );
+            })
+          },
+          msg => {
+            reject();
+          }
+        )
+    });
+    return promise;
   }
+
 }
 
 @Component({
@@ -67,7 +75,7 @@ class SearchService {
 </div>
 <ul class="list-group">
 	<li class="list-group-item"
-	    *ngFor="let track of results | async">
+	    *ngFor="let track of itunes.results">
 		<img src="{{track.thumbnail}}">
 		<a target="_blank"
 		   href="{{track.link}}">{{ track.track }}
@@ -80,17 +88,16 @@ class SearchService {
 class AppComponent {
 
   private loading: boolean = false;
-  private results: Observable<SearchItem[]>;
   constructor(private itunes: SearchService) {
 
   }
 
   doSearch(term: string) {
     this.loading = true;
-    this.results = this.itunes.search(term)
-
+    this.itunes.search(term).then(() => this.loading = false);
   }
 }
+
 
 @NgModule({
   imports: [
